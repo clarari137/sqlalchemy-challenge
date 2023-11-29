@@ -56,7 +56,7 @@ def welcome():
 @app.route("/api/v1.0/precipitation")
 def precip():
     """Return a dictionary of precipitation values"""
-    # Using query from climate analysis, query one year of data
+    # Using query from climate analysis, select one year of data
     last12 = session.query(measurement.date, measurement.prcp).\
         filter(measurement.date>year_before).all()
     # Convert to dictionary, jsonify
@@ -66,6 +66,7 @@ def precip():
 # Station List
 @app.route("/api/v1.0/stations")
 def stations():
+    # Query all stations and group by to avoid repetition
     station = session.query(measurement.station).group_by(measurement.station).all()
     # Convert to list, jsonify
     station_list = list(np.ravel(station))
@@ -74,7 +75,7 @@ def stations():
 # Temperature Observations
 @app.route("/api/v1.0/tobs")
 def tobs():
-    # query specific station data and create list, jsonify
+    # Query specific station data and create list, jsonify
     station_last12 = session.query(measurement.tobs).\
         filter(measurement.date>=year_before).\
         filter(measurement.station == 'USC00519281').all()
@@ -93,7 +94,7 @@ def start(start):
 # Start and End Date Provided
 @app.route("/api/v1.0/<start>/<end>")
 def startend(start,end):
-    # Minimum, maximum, and average temperature observed for provided start date
+    # Minimum, maximum, and average temperature observed for provided start and end date
     startend_stats = session.query(func.min(measurement.tobs), func.max(measurement.tobs),func.avg(measurement.tobs)).\
         filter(measurement.date >= start).filter(measurement.date<=end).all()
     startend_list = list(np.ravel(startend_stats))
